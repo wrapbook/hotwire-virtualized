@@ -1,0 +1,27 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  text-size: 18px;
+}
+
+ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+li {
+  margin: 0;
+  padding: 0;
+  height: 50px;
+  background: #f4f5fa;
+  display: flex;
+  align-items: center;
+}
+
+li div {
+  padding: 0 1rem;
+}
