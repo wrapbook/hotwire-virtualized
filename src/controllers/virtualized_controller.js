@@ -88,8 +88,7 @@ export default class extends Controller {
       const start = performance.now();
       this.render();
       const end = performance.now();
-      if (this.debugValue && false)
-        console.log(`Time Rendering: ${end - start} ms`);
+      if (this.debugValue) console.log(`Time Rendering: ${end - start} ms`);
       this.rendering = false;
       if (this.requireRender) this.requestRender();
     });

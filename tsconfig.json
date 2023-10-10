@@ -107,5 +107,11 @@
     "skipLibCheck": true /* Skip type checking all .d.ts files. */
   },
   "include": ["./src/**/*"],
-  "exclude": ["node_modules", "dist", "playwright.config.js"]
+  "exclude": [
+    "node_modules",
+    "test_results",
+    "dist",
+    "playwright.config.js",
+    "tsup.config.js"
+  ]
 }
