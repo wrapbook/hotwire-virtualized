@@ -27,7 +27,7 @@ This library uses [custom actions](https://turbo.hotwired.dev/handbook/streams#c
 ### Replace / Load
 
 ```html
-<turbo-stream action="virtualized-replace" target="1">
+<turbo-stream action="v-replace" target="1">
   <template>
     <li>
       <div>ID {id}</div>
@@ -35,3 +35,25 @@ This library uses [custom actions](https://turbo.hotwired.dev/handbook/streams#c
   </template>
 </turbo-stream>
 ```
+
+### Remove
+
+```html
+<turbo-stream action="v-remove" target="1"></turbo-stream>
+```
+
+### Append
+
+```html
+<turbo-stream action="v-append" target="6">
+  <template>
+    <li>
+      <div>ID 6</div>
+    </li>
+  </template>
+</turbo-stream>
+```
+
+## Multiple Virtualized
+
+TODO.

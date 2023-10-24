@@ -4,6 +4,7 @@ import bodyParser from "body-parser";
 import path from "path";
 import { fileURLToPath } from "url";
 import fs from "fs";
+import methodOverride from "method-override";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -29,13 +30,21 @@ router.get("/", (_request, response) => {
 
 router.get("/items", (request, response) => {
   const ids = [];
-  for (let i = 1; i <= 1000; i++) {
+  for (let i = 1; i <= 100; i++) {
     ids.push(i);
   }
   const template = fs
     .readFileSync(path.join(__dirname, "fixtures", "items.html"), "utf8")
     .replace(/\{ids\}/g, JSON.stringify(ids));
   response.type("html").status(200).send(template);
+});
+
+router.delete("/items/:id", (request, response) => {
+  const { id } = request.params;
+  response
+    .type("text/vnd.turbo-stream.html; charset=utf-8")
+    .status(200)
+    .send(`<turbo-stream action="v-remove" target="${id}"></turbo-stream>`);
 });
 
 router.get("/load-items", (request, response) => {
@@ -66,6 +75,7 @@ function acceptsStreams(request) {
 const app = express();
 const port = parseInt(process.env.PORT || "9000");
 
+app.use(methodOverride("_method"));
 app.use(json({ limit: "1mb" }), urlencoded({ extended: true }));
 app.use(express.static("."));
 app.use(router);

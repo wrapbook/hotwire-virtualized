@@ -25,3 +25,7 @@ li {
 li div {
   padding: 0 1rem;
 }
+
+.flex {
+  display: flex;
+}

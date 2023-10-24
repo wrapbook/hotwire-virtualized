@@ -11,6 +11,7 @@ export default class extends Controller {
     pageSize: { type: Number, default: 50 },
     renderAhead: { type: Number, default: 10 },
     debug: { type: Boolean, default: false },
+    virtualizedId: { type: String, default: "virtualized" },
   };
 
   static targets = ["viewport", "content", "placeholder"];
@@ -31,6 +32,7 @@ export default class extends Controller {
     this.throttledLoadMissing = throttle(this.loadMissing, 200, this);
 
     this.styleTargets();
+    this.restoreScrollPosition();
     this.requestRender();
   }
 
@@ -113,6 +115,7 @@ export default class extends Controller {
     this.startNode = startNode;
     this.stopNode = startNode + visibleNodeCount;
     this.updateContent();
+    this.storeScrollPosition(scrollTop);
   }
 
   updateContent() {
@@ -229,16 +232,40 @@ export default class extends Controller {
     }
   }
 
+  get positionKey() {
+    return `${this.virtualizedIdValue}/position`;
+  }
+
+  storeScrollPosition(position) {
+    if (!window.sessionStorage) return;
+
+    console.log({ position });
+
+    window.sessionStorage.setItem(this.positionKey, position);
+  }
+
+  restoreScrollPosition() {
+    if (!window.sessionStorage) return;
+
+    const value = window.sessionStorage.getItem(this.positionKey);
+    if (value === null) return;
+
+    console.log(value);
+
+    // TODO: What is proper function to call?
+    this.element.scrollBy(0, parseInt(value, 10));
+  }
+
   streamRender(event) {
     const fallbackToDefaultActions = event.detail.render;
 
     event.detail.render = (streamElement) => {
       switch (streamElement.action) {
-        case "virtualized-replace":
+        case "v-replace":
           return this.virtualizedReplace(streamElement);
-        case "virtualized-remove":
+        case "v-remove":
           return this.virtualizedRemove(streamElement);
-        case "virtualized-append":
+        case "v-append":
           return this.virtualizedAppend(streamElement);
         default:
           return fallbackToDefaultActions(streamElement);
@@ -247,44 +274,81 @@ export default class extends Controller {
   }
 
   virtualizedReplace(streamElement) {
-    const target = streamElement.target;
+    const rowId = streamElement.target;
     const element = streamElement.templateContent.firstElementChild;
-    const rowId = streamElement.getAttribute("row-id");
-    const replaceTarget = rowId && target !== rowId;
+    const newRowId = streamElement.getAttribute("row-id");
+    const replaceTarget = newRowId && rowId !== newRowId;
 
     // When a row is added on the client side, it is given a temporary rowId.
     // When that record is persisted, it may want to replace the temp rowId
     // with a permanent ID (e.g. from the database). By setting the row-id attribute,
     // it will be used in the rowIds array and the rowCache going forward.
 
-    if (replaceTarget) {
-      const index = this.rowIds.indexOf(target);
-      if (index >= 0) {
-        this.rowIds[index] = rowId;
-      }
-      this.rowCache.delete(target);
-      this.rowCache.set(rowId, element);
-    } else {
-      this.rowCache.set(target, element);
-    }
-    this.requestRender();
+    this.replaceRow(rowId, element, replaceTarget ? newRowId : null);
   }
 
   virtualizedAppend(streamElement) {
-    const target = streamElement.target;
+    const rowId = streamElement.target;
     const element = streamElement.templateContent.firstElementChild;
-    this.rowCache.set(target, element);
-    this.rowIds.push(target);
+    this.appendRow(rowId, element);
   }
 
   virtualizedRemove(streamElement) {
-    const target = streamElement.target;
-    const index = this.rowIds.indexOf(target);
-    this.rowCache.delete(target);
+    const rowId = streamElement.target;
+    this.removeRow(rowId);
+  }
+
+  replaceRow(rowId, element, newRowId) {
+    if (newRowId) {
+      const index = this.rowIds.indexOf(rowId);
+      if (index >= 0) {
+        this.rowIds[index] = newRowId;
+      }
+      this.rowCache.delete(rowId);
+      this.rowCache.set(newRowId, element);
+    } else {
+      this.rowCache.set(rowId, element);
+    }
+
+    this.requestRender();
+  }
+
+  appendRow(rowId, element) {
+    this.rowCache.set(rowId, element);
+    this.rowIds.push(rowId);
+    this.requestRender();
+  }
+
+  removeRow(rowId) {
+    const index = this.rowIds.indexOf(rowId);
+    this.rowCache.delete(rowId);
     if (index >= 0) {
       this.rowIds.splice(index, 1); // remove id from rowIds
     }
     this.requestRender();
+  }
+
+  appendRowId(rowId, element = null) {
+    this.insertRowId(this.rowIds.length, rowId, element);
+  }
+
+  insertRowIdAfter(rowId, afterRowId, element = null) {
+    const afterIndex = this.rowIds.indexOf(afterRowId.toString());
+    if (afterIndex < 0) return;
+
+    this.insertRowId(afterIndex + 1, rowId, element);
+  }
+
+  prependRowId(rowId, element = null) {
+    this.insertRowId(0, rowId, element);
+  }
+
+  insertRowId(index, rowId, element = null) {
+    rowId = rowId.toString();
+    this.rowIds.splice(index, 0, rowId);
+    if (element) {
+      this.rowCache.set(rowId, element);
+    }
   }
 
   newRowAdded(event) {
