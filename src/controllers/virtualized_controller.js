@@ -7,14 +7,13 @@ export default class extends Controller {
     ids: { type: Array, default: [] },
     url: { type: String },
     rowHeight: { type: Number },
-    height: { type: String },
     pageSize: { type: Number, default: 50 },
     renderAhead: { type: Number, default: 10 },
     debug: { type: Boolean, default: false },
     virtualizedId: { type: String, default: "virtualized" },
   };
 
-  static targets = ["viewport", "content", "placeholder"];
+  static targets = ["content", "placeholder"];
 
   connect() {
     this.rowCache = new Map(); // Could be LRU cache
@@ -25,13 +24,14 @@ export default class extends Controller {
     this.currentFetches = 0;
     this.rendering = false;
 
+    this.prepareDOM();
+
     this.boundEvents = [];
-    this.bindEvent(this.element, "scroll", this.onScroll);
+    this.bindEvent(this.container, "scroll", this.onScroll);
     this.bindEvent(window, "turbo:before-stream-render", this.streamRender);
     this.bindEvent(window, "resize", this.requestRender);
     this.throttledLoadMissing = throttle(this.loadMissing, 200, this);
 
-    this.styleTargets();
     this.restoreScrollPosition();
     this.requestRender();
   }
@@ -48,19 +48,43 @@ export default class extends Controller {
     });
   }
 
-  styleTargets() {
-    this.element.style.height = `${this.height}px`;
-    this.element.style.overflow = "auto";
+  prepareDOM() {
+    // Height based off of contentParentNode
+    this.contentParentNode = this.contentTarget.parentNode;
 
-    this.viewportTarget.style.position = "relative";
-    this.viewportTarget.style.height = `${
-      this.rowIds.length * this.rowHeightValue
-    }px`;
-    this.viewportTarget.style.overflow = "hidden";
-    this.viewportTarget.style.willChange = "transform";
+    if (this.height === 0) {
+      console.warn(
+        "Ensure viewport's parent element has a specified height.",
+        this.contentParentNode
+      );
+    }
 
+    // Create Container Element
+    this.container = document.createElement("div");
+    this.container.style.height = `${this.height}px`;
+    this.container.style.overflow = "auto";
+
+    // Create Viewport Element
+    this.viewport = document.createElement("div");
+    this.viewport.style.position = "relative";
+    this.updateViewportHeight();
+    this.viewport.style.overflow = "hidden";
+    this.viewport.style.willChange = "transform";
+
+    // Style Content Target
     this.contentTarget.style.willChange = "transform";
     this.contentTarget.style.transform = "translateY(0px)";
+
+    // Insert Elements
+    this.contentParentNode.insertBefore(this.container, this.contentTarget);
+    this.container.appendChild(this.viewport);
+    this.viewport.appendChild(this.contentTarget);
+  }
+
+  updateViewportHeight() {
+    this.viewport.style.height = `${
+      this.rowIds.length * this.rowHeightValue
+    }px`;
   }
 
   onScroll() {
@@ -68,15 +92,7 @@ export default class extends Controller {
   }
 
   get height() {
-    const value = this.heightValue;
-
-    if (value.includes("vh")) {
-      return (window.innerHeight * parseInt(value)) / 100;
-    } else if (value.includes("px")) {
-      return parseInt(value);
-    } else {
-      return window.innerHeight;
-    }
+    return this.contentParentNode.clientHeight;
   }
 
   requestRender() {
@@ -87,17 +103,17 @@ export default class extends Controller {
     this.requireRender = false;
 
     requestAnimationFrame(() => {
-      const start = performance.now();
+      // const start = performance.now();
       this.render();
-      const end = performance.now();
-      if (this.debugValue) console.log(`Time Rendering: ${end - start} ms`);
+      // const end = performance.now();
+      // if (this.debugValue) console.log(`Time Rendering: ${end - start} ms`);
       this.rendering = false;
       if (this.requireRender) this.requestRender();
     });
   }
 
   render() {
-    const scrollTop = this.element.scrollTop;
+    const scrollTop = this.container.scrollTop;
     let startNode =
       Math.floor(scrollTop / this.rowHeightValue) - this.renderAheadValue;
     startNode = Math.max(0, startNode);
@@ -239,8 +255,6 @@ export default class extends Controller {
   storeScrollPosition(position) {
     if (!window.sessionStorage) return;
 
-    console.log({ position });
-
     window.sessionStorage.setItem(this.positionKey, position);
   }
 
@@ -250,10 +264,9 @@ export default class extends Controller {
     const value = window.sessionStorage.getItem(this.positionKey);
     if (value === null) return;
 
-    console.log(value);
+    if (this.debugValue) console.log(`Restoring scroll position: ${value}`);
 
-    // TODO: What is proper function to call?
-    this.element.scrollBy(0, parseInt(value, 10));
+    this.container.scrollBy(0, parseInt(value, 10));
   }
 
   streamRender(event) {
@@ -262,18 +275,48 @@ export default class extends Controller {
     event.detail.render = (streamElement) => {
       switch (streamElement.action) {
         case "v-replace":
-          return this.virtualizedReplace(streamElement);
+          return this.streamReplace(streamElement);
         case "v-remove":
-          return this.virtualizedRemove(streamElement);
+          return this.streamRemove(streamElement);
+        case "v-prepend":
+          return this.streamPrepend(streamElement);
         case "v-append":
-          return this.virtualizedAppend(streamElement);
+          return this.streamAppend(streamElement);
         default:
           return fallbackToDefaultActions(streamElement);
       }
     };
   }
 
-  virtualizedReplace(streamElement) {
+  eventRender(event) {
+    const {
+      detail: { id, element, action, targetId },
+    } = event;
+
+    if (action === "append") {
+      this.insertRowId(this.rowIds.length, id, element);
+    } else if (action === "prepend") {
+      this.insertRowId(0, id, element);
+    } else if (action === "after") {
+      this.insertRowIdAfter(id, targetId, element);
+    } else if (action === "before") {
+      this.insertRowIdBefore(id, targetId, element);
+    } else if (action === "replace") {
+      this.replaceRow(id, element, targetId);
+    } else if (action === "remove") {
+      this.removeRow(id);
+    } else {
+      console.warn(`Unknown action: ${action}`);
+    }
+  }
+
+  actionRender(event) {
+    const { id, action, targetId, selector } = event.params;
+    const element = selector ? document.querySelector(selector) : null;
+    this.eventRender({ detail: { id, element, action, targetId } });
+  }
+
+  streamReplace(streamElement) {
     const rowId = streamElement.target;
     const element = streamElement.templateContent.firstElementChild;
     const newRowId = streamElement.getAttribute("row-id");
@@ -287,13 +330,19 @@ export default class extends Controller {
     this.replaceRow(rowId, element, replaceTarget ? newRowId : null);
   }
 
-  virtualizedAppend(streamElement) {
+  streamPrepend(streamElement) {
     const rowId = streamElement.target;
     const element = streamElement.templateContent.firstElementChild;
-    this.appendRow(rowId, element);
+    this.insertRowId(0, rowId, element);
   }
 
-  virtualizedRemove(streamElement) {
+  streamAppend(streamElement) {
+    const rowId = streamElement.target;
+    const element = streamElement.templateContent.firstElementChild;
+    this.insertRowId(this.rowIds.length, rowId, element);
+  }
+
+  streamRemove(streamElement) {
     const rowId = streamElement.target;
     this.removeRow(rowId);
   }
@@ -313,53 +362,52 @@ export default class extends Controller {
     this.requestRender();
   }
 
-  appendRow(rowId, element) {
-    this.rowCache.set(rowId, element);
-    this.rowIds.push(rowId);
-    this.requestRender();
-  }
-
   removeRow(rowId) {
     const index = this.rowIds.indexOf(rowId);
     this.rowCache.delete(rowId);
     if (index >= 0) {
       this.rowIds.splice(index, 1); // remove id from rowIds
     }
+    this.updateViewportHeight();
     this.requestRender();
   }
 
-  appendRowId(rowId, element = null) {
-    this.insertRowId(this.rowIds.length, rowId, element);
+  // prependRowId(event) {
+  //   const { id } = event.params;
+  //   this.insertRowId(0, id);
+  // }
+
+  // appendRowId(event) {
+  //   const { id } = event.params;
+  //   this.insertRowId(this.rowIds.length, id);
+  // }
+
+  insertRowIdBefore(rowId, targetId, element = null) {
+    const index = this.rowIds.indexOf(targetId.toString());
+    if (index < 0) return;
+
+    this.insertRowId(index, rowId, element);
   }
 
-  insertRowIdAfter(rowId, afterRowId, element = null) {
-    const afterIndex = this.rowIds.indexOf(afterRowId.toString());
-    if (afterIndex < 0) return;
+  insertRowIdAfter(rowId, targetId, element = null) {
+    const index = this.rowIds.indexOf(targetId.toString());
+    if (index < 0) return;
 
-    this.insertRowId(afterIndex + 1, rowId, element);
-  }
-
-  prependRowId(rowId, element = null) {
-    this.insertRowId(0, rowId, element);
+    this.insertRowId(index + 1, rowId, element);
   }
 
   insertRowId(index, rowId, element = null) {
     rowId = rowId.toString();
-    this.rowIds.splice(index, 0, rowId);
+
+    if (!this.rowIds.includes(rowId)) {
+      this.rowIds.splice(index, 0, rowId);
+    }
+
     if (element) {
       this.rowCache.set(rowId, element);
     }
-  }
 
-  newRowAdded(event) {
-    const {
-      detail: { newRow },
-    } = event;
-    const newIndex = this.rowIds.indexOf(event.target.dataset.id) + 1;
-    const newRowId = newRow.getAttribute("id");
-
-    this.rowIds.splice(newIndex, 0, newRowId);
-    this.rowCache.set(newRowId.toString(), newRow);
+    this.updateViewportHeight();
     this.requestRender();
   }
 }

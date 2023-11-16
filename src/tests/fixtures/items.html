@@ -12,17 +12,45 @@
   <body>
     <div
       data-controller="virtualized"
-      data-virtualized-height-value="100vh"
       data-virtualized-row-height-value="50"
       data-virtualized-url-value="/load-items"
       data-virtualized-ids-value="{ids}"
+      data-virtualized-debug-value="true"
     >
       <template data-virtualized-target="placeholder">
         <li><div>Loading...</div></li>
       </template>
 
-      <div data-virtualized-target="viewport">
+      <div style="padding: 10px">
+        <button
+          data-controller="testId"
+          data-action="testId#refresh virtualized#actionRender"
+          data-virtualizedId-param="0"
+          data-virtualized-action-param="prepend"
+        >
+          Prepend ID
+        </button>
+      </div>
+
+      <div style="height: 300px">
         <ul data-virtualized-target="content"></ul>
+      </div>
+
+      <div
+        style="padding: 10px"
+        data-controller="testId event"
+        data-action="event:emit->virtualized#eventRender"
+      >
+        <button
+          data-action="testId#refresh virtualized#actionRender"
+          data-virtualized-id-param="101"
+          data-virtualized-action-param="append"
+        >
+          Append ID
+        </button>
+
+        <button data-action="event#prepend">Prepend Row</button>
+        <button data-action="event#append">Append Row</button>
       </div>
     </div>
   </body>
