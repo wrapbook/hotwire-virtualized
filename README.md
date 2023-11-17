@@ -57,7 +57,11 @@ This library uses [custom actions](https://turbo.hotwired.dev/handbook/streams#c
 ### Prepend
 
 ```html
-<button data-action="virtualized#prependRowId" data-virtualizedId-param="123">
+<button
+  data-action="virtualized#actionRender"
+  data-virtualized-id-param="123"
+  data-virtualized-action-param="prepend"
+>
   Prepend ID
 </button>
 ```
@@ -65,7 +69,11 @@ This library uses [custom actions](https://turbo.hotwired.dev/handbook/streams#c
 ### Append
 
 ```html
-<button data-action="virtualized#appendRowId" data-virtualizedId-param="123">
+<button
+  data-action="virtualized#actionRender"
+  data-virtualized-id-param="123"
+  data-virtualized-action-param="append"
+>
   Append ID
 </button>
 ```

@@ -372,16 +372,6 @@ export default class extends Controller {
     this.requestRender();
   }
 
-  // prependRowId(event) {
-  //   const { id } = event.params;
-  //   this.insertRowId(0, id);
-  // }
-
-  // appendRowId(event) {
-  //   const { id } = event.params;
-  //   this.insertRowId(this.rowIds.length, id);
-  // }
-
   insertRowIdBefore(rowId, targetId, element = null) {
     const index = this.rowIds.indexOf(targetId.toString());
     if (index < 0) return;
