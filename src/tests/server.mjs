@@ -39,6 +39,14 @@ router.get("/items", (request, response) => {
   response.type("html").status(200).send(template);
 });
 
+router.get("/preloaded", (_request, response) => {
+  const ids = [1, 2, 3, 4, 5];
+  const template = fs
+    .readFileSync(path.join(__dirname, "fixtures", "preloaded.html"), "utf8")
+    .replace(/\{ids\}/g, JSON.stringify(ids));
+  response.type("html").status(200).send(template);
+});
+
 router.delete("/items/:id", (request, response) => {
   const { id } = request.params;
   response

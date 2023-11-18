@@ -13,7 +13,7 @@ export default class extends Controller {
     virtualizedId: { type: String, default: "virtualized" },
   };
 
-  static targets = ["content", "placeholder"];
+  static targets = ["content", "placeholder", "preloaded"];
 
   connect() {
     this.rowCache = new Map(); // Could be LRU cache
@@ -32,6 +32,7 @@ export default class extends Controller {
     this.bindEvent(window, "resize", this.requestRender);
     this.throttledLoadMissing = throttle(this.loadMissing, 200, this);
 
+    this.parsePreloaded();
     this.restoreScrollPosition();
     this.requestRender();
   }
@@ -79,6 +80,17 @@ export default class extends Controller {
     this.contentParentNode.insertBefore(this.container, this.contentTarget);
     this.container.appendChild(this.viewport);
     this.viewport.appendChild(this.contentTarget);
+  }
+
+  parsePreloaded() {
+    this.preloadedTargets.forEach((template) => {
+      const rowId = template.getAttribute("data-preloaded-id");
+      if (rowId) {
+        const element = template.content.firstElementChild;
+        this.rowCache.set(rowId, element);
+      }
+      template.remove();
+    });
   }
 
   updateViewportHeight() {
