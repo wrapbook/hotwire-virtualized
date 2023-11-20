@@ -138,4 +138,46 @@ You must pass a data attribute of `data-preloaded-id="1"` where 1 is the ID that
 
 ## Multiple Virtualized
 
-TODO.
+When you require multiple instances on a single page, you must set the `virtualized-id` value to a unique value for each instance. The default value when not set is `virtualized`.
+
+```html
+<div
+  data-controller="virtualized"
+  data-virtualized-virtualized-id-value="virtual-a"
+>
+  <!-- First Instance -->
+</div>
+
+<div
+  data-controller="virtualized"
+  data-virtualized-virtualized-id-value="virtual-b"
+>
+  <!-- Second Instance -->
+</div>
+```
+
+### Stream Responses
+
+When stream responses need to target a specific instance must include the `virtualized-id` attribute:
+
+```html
+<turbo-stream action="v-replace" target="1" virtualized-id="virtual-a">
+  <template>
+    <li>Content</li>
+  </template>
+</turbo-stream>
+```
+
+### Events
+
+Events can also be targeted towards a specific instance using the `virtualizedId` detail value:
+
+```js
+this.dispatch("emit", {
+  detail: { id, element, action: "prepend", virtualizedId: "virtual-a" },
+});
+```
+
+### Request Headers
+
+Requests to load data from the server will include the `X-Virtualized-Id` header value in order to differentiate requests being made by different instances.

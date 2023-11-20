@@ -251,7 +251,12 @@ export default class extends Controller {
       if (this.debugValue) console.log(`Loading: ${ids.join(",")}`);
       this.currentFetches++;
       ids.forEach((id) => (this.loadingIds[id] = true));
-      const response = await fetch(this.urlFor(ids));
+      const response = await fetch(this.urlFor(ids), {
+        headers: {
+          // Accept: "text/vnd.turbo-stream.html",
+          "X-Virtualized-Id": this.virtualizedIdValue,
+        },
+      });
       const html = await response.text();
       Turbo.renderStreamMessage(html);
     } finally {
@@ -285,6 +290,13 @@ export default class extends Controller {
     const fallbackToDefaultActions = event.detail.render;
 
     event.detail.render = (streamElement) => {
+      const virtualizedId = streamElement.getAttribute("virtualized-id");
+
+      // When virtualizedId mismatch we assume another instance will process
+      if (virtualizedId && virtualizedId !== this.virtualizedIdValue) {
+        return fallbackToDefaultActions(streamElement);
+      }
+
       switch (streamElement.action) {
         case "v-replace":
           return this.streamReplace(streamElement);
@@ -302,8 +314,10 @@ export default class extends Controller {
 
   eventRender(event) {
     const {
-      detail: { id, element, action, targetId },
+      detail: { id, element, action, targetId, virtualizedId },
     } = event;
+
+    if (virtualizedId && virtualizedId !== this.virtualizedIdValue) return;
 
     if (action === "append") {
       this.insertRowId(this.rowIds.length, id, element);

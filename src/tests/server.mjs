@@ -28,7 +28,7 @@ router.get("/", (_request, response) => {
     );
 });
 
-router.get("/items", (request, response) => {
+router.get("/items", (_request, response) => {
   const ids = [];
   for (let i = 1; i <= 100; i++) {
     ids.push(i);
@@ -47,6 +47,14 @@ router.get("/preloaded", (_request, response) => {
   response.type("html").status(200).send(template);
 });
 
+router.get("/multiple", (_request, response) => {
+  const template = fs.readFileSync(
+    path.join(__dirname, "fixtures", "multiple.html"),
+    "utf8"
+  );
+  response.type("html").status(200).send(template);
+});
+
 router.delete("/items/:id", (request, response) => {
   const { id } = request.params;
   response
@@ -62,11 +70,31 @@ router.get("/load-items", (request, response) => {
 
   const html = ids
     .map((id) => {
-      const template = fs.readFileSync(
-        path.join(__dirname, "fixtures", "item.html"),
-        "utf8"
-      );
-      return template.replace(/\{id\}/g, id);
+      return fs
+        .readFileSync(path.join(__dirname, "fixtures", "item.html"), "utf8")
+        .replace(/\{id\}/g, id)
+        .replace(/\{virtualizedId\}/g, "");
+    })
+    .join("\n");
+
+  response
+    .type("text/vnd.turbo-stream.html; charset=utf-8")
+    .status(200)
+    .send(html);
+});
+
+router.get("/multiple-load-items", (request, response) => {
+  const {
+    q: { id_in: ids },
+  } = request.query;
+  let virtualizedId = request.headers["x-virtualized-id"];
+
+  const html = ids
+    .map((id) => {
+      return fs
+        .readFileSync(path.join(__dirname, "fixtures", "item.html"), "utf8")
+        .replace(/\{id\}/g, id)
+        .replace(/\{virtualizedId\}/g, virtualizedId);
     })
     .join("\n");
 
