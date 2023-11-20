@@ -120,6 +120,22 @@ Require params:
 - targetId: when the action is relative
 - selector: used to find element to add to cache via `document.querySelector(selector)`
 
+## Preload Data
+
+By default, the virtualized controller will fetch data from the backend for any IDs that aren't in its row cache. You can preload data into the row cache using the `preloaded` target. This is useful when you want to render the first set of rows immediately.
+
+You must pass a data attribute of `data-preloaded-id="1"` where 1 is the ID that corresponds to the row, as it is how we correspond this row to the data in the row cache.
+
+```html
+<template data-virtualized-target="preloaded" data-preloaded-id="1">
+  <li><div>Preloaded 1</div></li>
+</template>
+
+<template data-virtualized-target="preloaded" data-preloaded-id="2">
+  <li><div>Preloaded 2</div></li>
+</template>
+```
+
 ## Multiple Virtualized
 
 TODO.
