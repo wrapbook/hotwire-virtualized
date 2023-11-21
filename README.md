@@ -86,6 +86,7 @@ Within a controller in your app, dispatch an event which includes:
 - action: The action to perform, one of `prepend`, `append`, `remove`, `before`, `after`, `replace`.
 - element: The HTML element to be inserted, if left blank, virtualized will fetch from backend using `id`.
 - targetId: When action is "before" or "after" or "replace" used to place relative to another row.
+- virtualizedId: When multiple virtualized controllers are on the page, this is used to target a specific instance.
 
 ```js
 const { id, element } = this.buildElement();
