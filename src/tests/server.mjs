@@ -55,6 +55,14 @@ router.get("/multiple", (_request, response) => {
   response.type("html").status(200).send(template);
 });
 
+router.get("/variable", (_request, response) => {
+  const template = fs.readFileSync(
+    path.join(__dirname, "fixtures", "variable.html"),
+    "utf8"
+  );
+  response.type("html").status(200).send(template);
+});
+
 router.delete("/items/:id", (request, response) => {
   const { id } = request.params;
   response
@@ -95,6 +103,27 @@ router.get("/multiple-load-items", (request, response) => {
         .readFileSync(path.join(__dirname, "fixtures", "item.html"), "utf8")
         .replace(/\{id\}/g, id)
         .replace(/\{virtualizedId\}/g, virtualizedId);
+    })
+    .join("\n");
+
+  response
+    .type("text/vnd.turbo-stream.html; charset=utf-8")
+    .status(200)
+    .send(html);
+});
+
+router.get("/variable-load-items", (request, response) => {
+  const {
+    q: { id_in: ids },
+  } = request.query;
+
+  const html = ids
+    .map((id) => {
+      return fs
+        .readFileSync(path.join(__dirname, "fixtures", "item.html"), "utf8")
+        .replace(/\{id\}/g, id)
+        .replace(/50px/, `${Math.floor(Math.random() * 200) + 25}px`)
+        .replace(/\{virtualizedId\}/g, "");
     })
     .join("\n");
 
