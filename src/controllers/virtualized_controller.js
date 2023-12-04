@@ -11,6 +11,7 @@ export default class extends Controller {
     renderAhead: { type: Number, default: 10 },
     debug: { type: Boolean, default: false },
     virtualizedId: { type: String, default: "virtualized" },
+    heightMode: { type: String, default: "fixed" },
   };
 
   static targets = ["content", "placeholder", "preloaded"];
@@ -24,6 +25,11 @@ export default class extends Controller {
     this.currentFetches = 0;
     this.rendering = false;
 
+    // Variable heights
+    this.variableTotal = 0;
+    this.variableRowHeights = [];
+    this.variableCumulativeHeights = [];
+
     this.prepareDOM();
 
     this.boundEvents = [];
@@ -33,6 +39,7 @@ export default class extends Controller {
     this.throttledLoadMissing = throttle(this.loadMissing, 200, this);
 
     this.parsePreloaded();
+    if (this.heightModeValue === "variable") this.initVariableHeights();
     this.restoreScrollPosition();
     this.requestRender();
   }
@@ -94,9 +101,12 @@ export default class extends Controller {
   }
 
   updateViewportHeight() {
-    this.viewport.style.height = `${
-      this.rowIds.length * this.rowHeightValue
-    }px`;
+    if (this.heightModeValue === "variable") {
+      this.viewport.style.height = `${this.variableTotalHeight}px`;
+    } else {
+      const fixedTotalHeight = this.rowIds.length * this.rowHeightValue;
+      this.viewport.style.height = `${fixedTotalHeight}px`;
+    }
   }
 
   onScroll() {
@@ -105,6 +115,50 @@ export default class extends Controller {
 
   get height() {
     return this.contentParentNode.clientHeight;
+  }
+
+  initVariableHeights() {
+    // todo: when init
+    // request load of all missing rows
+
+    // todo: when rows have changed
+    const rowHeights = [];
+    this.rowIds.forEach((id) => {
+      let elementHeight = 0;
+      const element = this.rowCache.get(id);
+
+      if (element) {
+        const dupe = element.cloneNode(true);
+        this.contentTarget.appendChild(dupe);
+        elementHeight = dupe.clientHeight;
+        dupe.remove();
+      }
+
+      rowHeights.push(elementHeight);
+    });
+    this.variableRowHeights = rowHeights;
+    this.updateCumulativeHeights();
+  }
+
+  updateCumulativeHeights() {
+    let totalHeight = 0;
+    const cumulativeHeights = [];
+
+    this.variableRowHeights.forEach((height) => {
+      cumulativeHeights.push(totalHeight);
+      totalHeight += height;
+    });
+
+    this.variableTotalHeight = totalHeight;
+    this.variableCumulativeHeights = cumulativeHeights;
+
+    if (this.debugValue) {
+      console.log("updateCumulativeHeights", {
+        totalHeight: this.variableTotalHeight,
+        rowHeights: [...this.variableRowHeights],
+        cumulativeHeights: [...this.variableCumulativeHeights],
+      });
+    }
   }
 
   requestRender() {
@@ -126,9 +180,7 @@ export default class extends Controller {
 
   render() {
     const scrollTop = this.container.scrollTop;
-    let startNode =
-      Math.floor(scrollTop / this.rowHeightValue) - this.renderAheadValue;
-    startNode = Math.max(0, startNode);
+    const startNode = this.calcStartNode(scrollTop);
 
     let visibleNodeCount =
       Math.ceil(this.height / this.rowHeightValue) + 2 * this.renderAheadValue;
@@ -144,6 +196,21 @@ export default class extends Controller {
     this.stopNode = startNode + visibleNodeCount;
     this.updateContent();
     this.storeScrollPosition(scrollTop);
+  }
+
+  calcStartNode(scrollTop) {
+    let index;
+
+    if (this.heightModeValue === "variable") {
+      // todo: binary search to limit number of iterations
+      index = this.variableCumulativeHeights.findIndex(
+        (height) => height >= scrollTop
+      );
+    } else {
+      index = Math.floor(scrollTop / this.rowHeightValue);
+    }
+
+    return Math.max(0, index - this.renderAheadValue);
   }
 
   updateContent() {
@@ -385,6 +452,10 @@ export default class extends Controller {
       this.rowCache.set(rowId, element);
     }
 
+    if (this.heightModeValue === "variable") {
+      this.updateVariableHeight(newRowId || rowId, element);
+    }
+
     this.requestRender();
   }
 
@@ -421,9 +492,28 @@ export default class extends Controller {
 
     if (element) {
       this.rowCache.set(rowId, element);
+      if (this.heightModeValue === "variable") {
+        this.updateVariableHeight(rowId, element);
+      }
     }
 
     this.updateViewportHeight();
     this.requestRender();
+  }
+
+  updateVariableHeight(rowId, element) {
+    if (!element) return;
+
+    const index = this.rowIds.indexOf(rowId);
+    if (index < 0) return;
+
+    // temporarily add it to DOM to get its height
+    const dupe = element.cloneNode(true);
+    this.contentTarget.appendChild(dupe);
+    const elementHeight = dupe.clientHeight;
+    dupe.remove();
+
+    this.variableRowHeights[index] = elementHeight;
+    this.updateCumulativeHeights();
   }
 }
