@@ -27,7 +27,7 @@ export default class extends Controller {
 
     // Variable heights
     this.variableTotal = 0;
-    this.variableRowHeights = [];
+    this.variableRowHeights = new Map();
     this.variableCumulativeHeights = [];
 
     this.prepareDOM();
@@ -121,11 +121,9 @@ export default class extends Controller {
     // todo: when init
     // request load of all missing rows
 
-    // todo: when rows have changed
-    const rowHeights = [];
-    this.rowIds.forEach((id) => {
+    this.rowIds.forEach((rowId) => {
       let elementHeight = 0;
-      const element = this.rowCache.get(id);
+      const element = this.rowCache.get(rowId);
 
       if (element) {
         const dupe = element.cloneNode(true);
@@ -134,9 +132,8 @@ export default class extends Controller {
         dupe.remove();
       }
 
-      rowHeights.push(elementHeight);
+      this.variableRowHeights.set(rowId, elementHeight);
     });
-    this.variableRowHeights = rowHeights;
     this.updateCumulativeHeights();
   }
 
@@ -144,9 +141,10 @@ export default class extends Controller {
     let totalHeight = 0;
     const cumulativeHeights = [];
 
-    this.variableRowHeights.forEach((height) => {
+    this.rowIds.forEach((rowId) => {
       cumulativeHeights.push(totalHeight);
-      totalHeight += height;
+      const rowHeight = this.variableRowHeights.get(rowId) || 0;
+      totalHeight += rowHeight;
     });
 
     this.variableTotalHeight = totalHeight;
