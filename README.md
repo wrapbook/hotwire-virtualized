@@ -11,7 +11,7 @@
   style="height: 100vh"
 >
   <template data-virtualized-target="placeholder">
-    <li><div>Loading...</div></li>
+    <li>Loading...</li>
   </template>
 
   <ul data-virtualized-target="content"></ul>
@@ -27,9 +27,7 @@ This library uses [custom actions](https://turbo.hotwired.dev/handbook/streams#c
 ```html
 <turbo-stream action="v-replace" target="1">
   <template>
-    <li>
-      <div>ID {id}</div>
-    </li>
+    <li>ID {id}</li>
   </template>
 </turbo-stream>
 ```
@@ -45,9 +43,7 @@ This library uses [custom actions](https://turbo.hotwired.dev/handbook/streams#c
 ```html
 <turbo-stream action="v-append" target="6">
   <template>
-    <li>
-      <div>ID 6</div>
-    </li>
+    <li>ID 6</li>
   </template>
 </turbo-stream>
 ```
@@ -90,7 +86,9 @@ Within a controller in your app, dispatch an event which includes:
 
 ```js
 const { id, element } = this.buildElement();
-this.dispatch("emit", { detail: { id, element, action: "append" } });
+this.dispatch("emit", {
+  detail: { id, element, action: "append", scrollTo: true },
+});
 ```
 
 Catch the event and forward it to the virtualized controller's `eventRender` action:
@@ -129,11 +127,11 @@ You must pass a data attribute of `data-preloaded-id="1"` where 1 is the ID that
 
 ```html
 <template data-virtualized-target="preloaded" data-preloaded-id="1">
-  <li><div>Preloaded 1</div></li>
+  <li>Preloaded 1</li>
 </template>
 
 <template data-virtualized-target="preloaded" data-preloaded-id="2">
-  <li><div>Preloaded 2</div></li>
+  <li>Preloaded 2</li>
 </template>
 ```
 
@@ -182,3 +180,12 @@ this.dispatch("emit", {
 ### Request Headers
 
 Requests to load data from the server will include the `X-Virtualized-Id` header value in order to differentiate requests being made by different instances.
+
+## Scrolling
+
+You can call the `scrollTop` or `scrollBottom` actions to scroll to the top or bottom of the list.
+
+```html
+<button data-action="virtualized#scrollTop">Scroll Top</button>
+<button data-action="virtualized#scrollBottom">Scroll Bottom</button>
+```
