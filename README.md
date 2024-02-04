@@ -1,6 +1,6 @@
 # Hotwire Virtualized
 
-![hotwire-virtualized](https://github.com/wrapbook/hotwire-virtualized/assets/603921/790f2566-030a-4fe1-9d93-2025903c838a)
+![hotwire-virtualized](https://github.com/wrapbook/hotwire-virtualized/assets/603921/5d48c4a0-1714-4880-af69-76adbb7bf40b)
 
 ## Usage
 
