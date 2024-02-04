@@ -11,22 +11,35 @@
   </head>
   <body>
     <div
+      class="container"
       data-controller="virtualized"
       data-virtualized-row-height-value="50"
       data-virtualized-url-value="/load-items"
       data-virtualized-ids-value="{ids}"
       data-virtualized-debug-value="true"
     >
+      <h1>Hotwire Virtualized / Preloaded</h1>
+
       <template data-virtualized-target="placeholder">
-        <li><div>Loading...</div></li>
+        <li>Loading...</li>
       </template>
 
       <template data-virtualized-target="preloaded" data-preloaded-id="1">
-        <li><div>Preloaded 1</div></li>
+        <li>
+          <span>Preloaded 1</span>
+          <form action="/items/1?_method=delete" method="post">
+            <button type="submit">Delete</button>
+          </form>
+        </li>
       </template>
 
       <template data-virtualized-target="preloaded" data-preloaded-id="2">
-        <li><div>Preloaded 2</div></li>
+        <li>
+          <span>Preloaded 2</span>
+          <form action="/items/2?_method=delete" method="post">
+            <button type="submit">Delete</button>
+          </form>
+        </li>
       </template>
 
       <div style="height: 300px">

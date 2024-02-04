@@ -15,17 +15,39 @@ ul {
 
 li {
   margin: 0;
-  padding: 0;
+  padding: 10px;
   height: 50px;
   background: #f4f5fa;
   display: flex;
   align-items: center;
+  justify-content: space-between;
 }
 
 li div {
   padding: 0 1rem;
 }
 
+button {
+  padding: 10px;
+  border: none;
+  background: #c6cbe1;
+  cursor: pointer;
+}
+
+form {
+  margin-left: 4px;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
 .flex {
   display: flex;
+}
+
+.py-10 {
+  padding: 10px 0px;
 }

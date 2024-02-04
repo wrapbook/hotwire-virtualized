@@ -314,19 +314,19 @@ export default class extends Controller {
 
   eventRender(event) {
     const {
-      detail: { id, element, action, targetId, virtualizedId },
+      detail: { id, element, action, targetId, virtualizedId, scrollTo },
     } = event;
 
     if (virtualizedId && virtualizedId !== this.virtualizedIdValue) return;
 
     if (action === "append") {
-      this.insertRowId(this.rowIds.length, id, element);
+      this.insertRowId(this.rowIds.length, id, element, scrollTo);
     } else if (action === "prepend") {
-      this.insertRowId(0, id, element);
+      this.insertRowId(0, id, element, scrollTo);
     } else if (action === "after") {
-      this.insertRowIdAfter(id, targetId, element);
+      this.insertRowIdAfter(id, targetId, element, scrollTo);
     } else if (action === "before") {
-      this.insertRowIdBefore(id, targetId, element);
+      this.insertRowIdBefore(id, targetId, element, scrollTo);
     } else if (action === "replace") {
       this.replaceRow(id, element, targetId);
     } else if (action === "remove") {
@@ -398,21 +398,21 @@ export default class extends Controller {
     this.requestRender();
   }
 
-  insertRowIdBefore(rowId, targetId, element = null) {
+  insertRowIdBefore(rowId, targetId, element = null, scrollTo = true) {
     const index = this.rowIds.indexOf(targetId.toString());
     if (index < 0) return;
 
-    this.insertRowId(index, rowId, element);
+    this.insertRowId(index, rowId, element, scrollTo);
   }
 
-  insertRowIdAfter(rowId, targetId, element = null) {
+  insertRowIdAfter(rowId, targetId, element = null, scrollTo = true) {
     const index = this.rowIds.indexOf(targetId.toString());
     if (index < 0) return;
 
-    this.insertRowId(index + 1, rowId, element);
+    this.insertRowId(index + 1, rowId, element, scrollTo);
   }
 
-  insertRowId(index, rowId, element = null) {
+  insertRowId(index, rowId, element = null, scrollTo = true) {
     rowId = rowId.toString();
 
     if (!this.rowIds.includes(rowId)) {
@@ -425,5 +425,16 @@ export default class extends Controller {
 
     this.updateViewportHeight();
     this.requestRender();
+    if (scrollTo) {
+      this.container.scrollTo(0, index * this.rowHeightValue);
+    }
+  }
+
+  scrollTop() {
+    this.container.scrollTo(0, 0);
+  }
+
+  scrollBottom() {
+    this.container.scrollTo(0, this.rowIds.length * this.rowHeightValue);
   }
 }

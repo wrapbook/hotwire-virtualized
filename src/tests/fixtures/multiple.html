@@ -11,12 +11,15 @@
   </head>
   <body>
     <div
+      class="container"
       data-controller="virtualized"
       data-virtualized-row-height-value="50"
       data-virtualized-url-value="/multiple-load-items"
       data-virtualized-ids-value="[1,2,3,4,5]"
       data-virtualized-virtualized-id-value="virtual-a"
     >
+      <h1>Hotwire Virtualized / Multiple</h1>
+
       <template data-virtualized-target="placeholder">
         <li><div>Loading...</div></li>
       </template>
@@ -27,6 +30,7 @@
     </div>
 
     <div
+      class="container"
       data-controller="virtualized"
       data-virtualized-row-height-value="50"
       data-virtualized-url-value="/multiple-load-items"

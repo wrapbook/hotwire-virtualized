@@ -30,7 +30,7 @@ router.get("/", (_request, response) => {
 
 router.get("/items", (_request, response) => {
   const ids = [];
-  for (let i = 1; i <= 100; i++) {
+  for (let i = 1; i <= 1000; i++) {
     ids.push(i);
   }
   const template = fs
@@ -55,6 +55,23 @@ router.get("/multiple", (_request, response) => {
   response.type("html").status(200).send(template);
 });
 
+router.put("/items/:id", (request, response) => {
+  const { id } = request.params;
+  response
+    .type("text/vnd.turbo-stream.html; charset=utf-8")
+    .status(200)
+    .send(
+      fs
+        .readFileSync(path.join(__dirname, "fixtures", "item.html"), "utf8")
+        .replace(/\{id\}/g, id)
+        .replace(/\{virtualizedId\}/g, "")
+        .replace(
+          /\{timestamp\}/g,
+          `(updated @ ${new Date().toLocaleTimeString()})`
+        )
+    );
+});
+
 router.delete("/items/:id", (request, response) => {
   const { id } = request.params;
   response
@@ -73,7 +90,8 @@ router.get("/load-items", (request, response) => {
       return fs
         .readFileSync(path.join(__dirname, "fixtures", "item.html"), "utf8")
         .replace(/\{id\}/g, id)
-        .replace(/\{virtualizedId\}/g, "");
+        .replace(/\{virtualizedId\}/g, "")
+        .replace(/\{timestamp\}/g, "");
     })
     .join("\n");
 
@@ -94,7 +112,8 @@ router.get("/multiple-load-items", (request, response) => {
       return fs
         .readFileSync(path.join(__dirname, "fixtures", "item.html"), "utf8")
         .replace(/\{id\}/g, id)
-        .replace(/\{virtualizedId\}/g, virtualizedId);
+        .replace(/\{virtualizedId\}/g, virtualizedId)
+        .replace(/\{timestamp\}/g, "");
     })
     .join("\n");
 
@@ -103,10 +122,6 @@ router.get("/multiple-load-items", (request, response) => {
     .status(200)
     .send(html);
 });
-
-function acceptsStreams(request) {
-  return !!request.accepts("text/vnd.turbo-stream.html");
-}
 
 const app = express();
 const port = parseInt(process.env.PORT || "9000");
