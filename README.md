@@ -1,5 +1,7 @@
 # Hotwire Virtualized
 
+![hotwire-virtualized](https://github.com/wrapbook/hotwire-virtualized/assets/603921/790f2566-030a-4fe1-9d93-2025903c838a)
+
 ## Usage
 
 ```html
