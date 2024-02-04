@@ -3,7 +3,14 @@
   "version": "0.0.1",
   "description": "Virtualized lists for Hotwire",
   "main": "index.js",
-  "author": "Leigh Halliday",
+  "contributors": [
+    {
+      "name": "Leigh Halliday"
+    },
+    {
+      "name": "Winston Ly"
+    }
+  ],
   "license": "MIT",
   "scripts": {
     "build": "tsup",
