@@ -1,6 +1,6 @@
 import * as Turbo from "@hotwired/turbo";
 import { Application } from "@hotwired/stimulus";
-import VirtualizedController from "../../controllers/virtualized_controller";
+import { VirtualizedController } from "../../controllers/virtualized_controller";
 import TestIdController from "./controllers/test_id_controller";
 import EventController from "./controllers/event_controller";
 

@@ -1,8 +1,7 @@
 {
   "name": "hotwire-virtualized",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Virtualized lists for Hotwire",
-  "main": "index.js",
   "contributors": [
     {
       "name": "Leigh Halliday"
@@ -12,8 +11,19 @@
     }
   ],
   "files": [
-    "dist"
+    "dist",
+    "package.json"
   ],
+  "exports": {
+    ".": {
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
   "license": "MIT",
   "scripts": {
     "build": "tsup",

@@ -2,7 +2,7 @@ import { Controller } from "@hotwired/stimulus";
 import { Turbo } from "@hotwired/turbo-rails";
 import { throttle } from "../utils/throttle";
 
-export default class extends Controller {
+export class VirtualizedController extends Controller {
   static values = {
     ids: { type: Array, default: [] },
     url: { type: String },
