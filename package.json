@@ -1,6 +1,6 @@
 {
   "name": "hotwire-virtualized",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Virtualized lists for Hotwire",
   "main": "index.js",
   "contributors": [
@@ -11,6 +11,9 @@
       "name": "Winston Ly"
     }
   ],
+  "files": [
+    "dist"
+  ],
   "license": "MIT",
   "scripts": {
     "build": "tsup",
@@ -18,7 +21,8 @@
     "dev": "npx concurrently \"yarn:watch\" \"yarn:test:server\"",
     "test": "npx playwright test",
     "test:server": "nodemon src/tests/server.mjs",
-    "test:ui": "npx playwright test --ui"
+    "test:ui": "npx playwright test --ui",
+    "prepare": "rm -rf dist && yarn build"
   },
   "peerDependencies": {
     "@hotwired/stimulus": ">= 3",
