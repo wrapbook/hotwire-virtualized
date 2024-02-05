@@ -8,13 +8,4 @@ export default defineConfig({
   format: ["esm", "cjs", "iife"],
   injectStyle: true,
   entry: ["src/index.ts", "src/tests/fixtures/test.js"],
-  // external: ["react"],
-  // esbuildOptions(options) {
-  //   options.define = {
-  //     "process.env.NODE_ENV": JSON.stringify("production"),
-  //   };
-  //   options.banner = {
-  //     js: '"use client"',
-  //   };
-  // },
 });

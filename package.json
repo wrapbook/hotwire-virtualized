@@ -32,7 +32,7 @@
     "test": "npx playwright test",
     "test:server": "nodemon src/tests/server.mjs",
     "test:ui": "npx playwright test --ui",
-    "prepare": "rm -rf dist && yarn build"
+    "prepare": "rm -rf dist && yarn build && rm -rf dist/tests"
   },
   "peerDependencies": {
     "@hotwired/stimulus": ">= 3",
