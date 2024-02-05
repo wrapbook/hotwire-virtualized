@@ -1,6 +1,6 @@
 {
   "name": "hotwire-virtualized",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "Virtualized lists for Hotwire",
   "contributors": [
     {
@@ -41,15 +41,15 @@
   "devDependencies": {
     "@hotwired/stimulus": "^3.2.2",
     "@hotwired/turbo-rails": "^7.3.0",
-    "@playwright/test": "^1.38.1",
+    "@playwright/test": "^1.41.2",
     "@web/dev-server-esbuild": "^0.4.1",
     "@web/test-runner": "^0.17.1",
     "@web/test-runner-playwright": "^0.10.1",
     "body-parser": "^1.20.2",
     "express": "^4.18.2",
     "method-override": "^3.0.0",
-    "nodemon": "^3.0.1",
+    "nodemon": "^3.0.3",
     "tsup": "^7.2.0",
-    "typescript": "^5.2.2"
+    "typescript": "^5.3.3"
   }
 }
