@@ -4,6 +4,8 @@
 
 ## Usage
 
+A minimal example within a Rails app [can be found here](https://github.com/leighhalliday/rails-hotwire-virtualized).
+
 ```html
 <div
   data-controller="virtualized"
