@@ -40,7 +40,7 @@ export class VirtualizedController extends Controller {
   bindEvent(object, event, func) {
     const boundFunc = func.bind(this);
     object.addEventListener(event, boundFunc);
-    this.boundEvents.push(object, event, boundFunc);
+    this.boundEvents.push([object, event, boundFunc]);
   }
 
   disconnect() {
