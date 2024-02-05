@@ -261,7 +261,11 @@ export class VirtualizedController extends Controller {
       Turbo.renderStreamMessage(html);
     } finally {
       this.currentFetches--;
-      ids.forEach((id) => delete this.loadingIds[id]);
+      // Don't love this but it's a simple way to avoid re-fetching the IDs
+      // during the time between fetch and when they're processed by Turbo
+      setTimeout(() => {
+        ids.forEach((id) => delete this.loadingIds[id]);
+      }, 1000);
     }
   }
 
