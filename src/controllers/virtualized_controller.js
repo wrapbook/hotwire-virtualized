@@ -253,7 +253,8 @@ export class VirtualizedController extends Controller {
       ids.forEach((id) => (this.loadingIds[id] = true));
       const response = await fetch(this.urlFor(ids), {
         headers: {
-          // Accept: "text/vnd.turbo-stream.html",
+          Accept:
+            "text/vnd.turbo-stream.html, text/html, application/xhtml+xml",
           "X-Virtualized-Id": this.virtualizedIdValue,
         },
       });
